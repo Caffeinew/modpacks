@@ -32,7 +32,7 @@ jobs:
             unzip -j "$file" "overrides/icon.png" -d .
             mv -f "icon.png" "${name}.png"
           done < changed_mrpack.txt
-          
+
       - name: Commit extracted files
         run: |
           git config --local user.name "github-actions[bot]"
@@ -40,3 +40,5 @@ jobs:
           git add *.index.json *.png
           git commit -m "Extracted and updated files from .mrpack" || echo "No changes to commit"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
