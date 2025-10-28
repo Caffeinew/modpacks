@@ -1,4 +1,6 @@
 name: Extract files from .mrpack
+permissions:
+  contents: write
 
 on:
   push:
