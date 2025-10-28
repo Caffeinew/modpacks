@@ -29,7 +29,7 @@ jobs:
             sha1=$(sha1sum "$file" | awk '{print $1}')
             unzip -j "$file" "modrinth.index.json" -d .
             chmod 644 modrinth.index.json
-            jq --arg sha1 "$sha1" '. + {sha1: $sha1}' modrinth.index.json > tmp.json && mv tmp.json modrinth.index.json
+            jq --arg sha1 "$sha1" --arg id "$name" '. + {sha1: $sha1, id: $id}' modrinth.index.json > tmp.json && mv tmp.json modrinth.index.json
             mv -f "modrinth.index.json" "${name}.index.json"
             unzip -j "$file" "overrides/icon.png" -d .
             mv -f "icon.png" "${name}.png"
