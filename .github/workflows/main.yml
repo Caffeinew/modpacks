@@ -1,0 +1,34 @@
+name: Extract files from .mrpack
+
+on:
+  push:
+    paths:
+      - '**/*.mrpack'
+
+jobs:
+  extract-mrpack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Find changed .mrpack files
+        id: mrpack
+        run: |
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '.mrpack$' > changed_mrpack.txt
+          cat changed_mrpack.txt
+
+      - name: Extract, rename, and inject SHA-1
+        run: |
+          while read file; do
+            name=$(basename "$file" .mrpack)
+            sha1=$(sha1sum "$file" | awk '{print $1}')
+            unzip -j "$file" "modrinth.index.json" -d .
+            jq --arg sha1 "$sha1" '. + {sha1: $sha1}' modrinth.index.json > tmp.json && mv tmp.json modrinth.index.json
+            mv -f "modrinth.index.json" "${name}.index.json"
+            unzip -j "$file" "overrides/icon.png" -d .
+            mv -f "icon.png" "${name}.png"
+          done < changed_mrpack.txt
