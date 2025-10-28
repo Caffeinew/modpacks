@@ -338,7 +338,8 @@
   "formatVersion": 1,
   "game": "minecraft",
   "name": "TEST",
-  "summary": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Velit nulla quae suscipit earum! Nemo assumenda aliquid quibusdam illum odit veniam dicta, dignissimos adipisci, veritatis laborum exercitationem sunt commodi tempore sed?",
-  "versionId": "1.0.0",
-  "sha1": "e6c3e00d3b20ba346c1935c126ae2d53d28568b6"
+  "summary": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Velit nulla quae suscipit earum! Nemo assumenda aliquid quibusdam illum odit veniam dicta",
+  "versionId": "1.0.1",
+  "sha1": "8e908c12b567c14a6557befb57baea6fce1cc0a5",
+  "id": "test"
 }
