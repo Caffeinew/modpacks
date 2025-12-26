@@ -5,7 +5,7 @@ permissions:
 on:
   push:
     paths:
-      - '**/*.mrpack'
+      - "**/*.mrpack"
 
 jobs:
   extract-mrpack:
@@ -19,27 +19,37 @@ jobs:
       - name: Find changed .mrpack files
         id: mrpack
         run: |
-          git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '.mrpack$' > changed_mrpack.txt
+          git diff --name-only --diff-filter=AM ${{ github.event.before }} ${{ github.sha }} | grep '.mrpack$' > changed_mrpack.txt || true
           cat changed_mrpack.txt
 
       - name: Extract, rename, and inject SHA-1
         run: |
           while read file; do
+            # Skip if file doesn't exist (in case of deletion)
+            if [ ! -f "$file" ]; then
+              echo "Skipping deleted file: $file"
+              continue
+            fi
+            
+            dir=$(dirname "$file")
             name=$(basename "$file" .mrpack)
             sha1=$(sha1sum "$file" | awk '{print $1}')
-            unzip -j "$file" "modrinth.index.json" -d .
-            chmod 644 modrinth.index.json
-            jq --arg sha1 "$sha1" --arg id "$name" '. + {sha1: $sha1, id: $id}' modrinth.index.json > tmp.json && mv tmp.json modrinth.index.json
-            mv -f "modrinth.index.json" "${name}.index.json"
-            unzip -j "$file" "overrides/icon.png" -d .
-            mv -f "icon.png" "${name}.png"
+            
+            # Extract to the same directory as the .mrpack file
+            unzip -j "$file" "modrinth.index.json" -d "$dir"
+            chmod 644 "$dir/modrinth.index.json"
+            jq --arg sha1 "$sha1" --arg id "$name" '. + {sha1: $sha1, id: $id}' "$dir/modrinth.index.json" > "$dir/tmp.json" && mv "$dir/tmp.json" "$dir/modrinth.index.json"
+            mv -f "$dir/modrinth.index.json" "$dir/${name}.index.json"
+            
+            unzip -j "$file" "overrides/icon.png" -d "$dir"
+            mv -f "$dir/icon.png" "$dir/${name}.png"
           done < changed_mrpack.txt
 
       - name: Commit extracted files
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add *.index.json *.png
+          git add *.index.json *.png || true
           git commit -m "Extracted and updated files from .mrpack" || echo "No changes to commit"
           git push
         env:
