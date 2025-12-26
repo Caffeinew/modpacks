@@ -5,7 +5,7 @@ permissions:
 on:
   push:
     paths:
-      - "**/*.mrpack"
+      - '**/*.mrpack'
 
 jobs:
   extract-mrpack:
@@ -32,17 +32,14 @@ jobs:
             fi
             
             dir=$(dirname "$file")
-            name=$(basename "$file" .mrpack)
             sha1=$(sha1sum "$file" | awk '{print $1}')
             
             # Extract to the same directory as the .mrpack file
             unzip -j "$file" "modrinth.index.json" -d "$dir"
             chmod 644 "$dir/modrinth.index.json"
             jq --arg sha1 "$sha1" --arg id "$name" '. + {sha1: $sha1, id: $id}' "$dir/modrinth.index.json" > "$dir/tmp.json" && mv "$dir/tmp.json" "$dir/modrinth.index.json"
-            mv -f "$dir/modrinth.index.json" "$dir/${name}.index.json"
             
             unzip -j "$file" "overrides/icon.png" -d "$dir"
-            mv -f "$dir/icon.png" "$dir/${name}.png"
           done < changed_mrpack.txt
 
       - name: Commit extracted files
